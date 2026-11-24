@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>测测你的隐藏天赋</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #281e38;
+  --muted: #625570;
+  --accent: #5836a7;
+  --paper: #fffaff;
+  --line: #e1d7ee;
+  font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: #f6f2fc; color: var(--ink); line-height: 1.65; }
+main { max-width: 900px; margin: auto; padding: 0 22px 24px; }
+header, footer { padding: 16px 0; color: var(--muted); font-size: .9rem; }
+header { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); }
+footer { border-top: 1px solid var(--line); }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { font-family: "Songti SC", SimSun, serif; line-height: 1.35; }
+h1 { font-size: clamp(2.55rem, 7vw, 5rem); margin: 10px 0 16px; }
+h1 em { color: var(--accent); font-style: normal; }
+h2 { font-size: clamp(1.5rem, 4.5vw, 2.4rem); margin: 6px 0 15px; }
+.kicker { color: var(--accent); font-weight: 700; }
+.muted { color: var(--muted); }
+.hero { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 30px; padding: 45px 0 28px; }
+.hero-art {
+  display: grid; place-items: center; aspect-ratio: 1.15; border-radius: 24px;
+  background: radial-gradient(ellipse, #644a8e, #241a37 76%);
+}
+.hero-art svg { width: 76%; height: auto; }
+.tags { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 0 25px; }
+.tags span { background: var(--paper); border: 1px solid var(--line); border-radius: 99px; padding: 3px 12px; }
+button { font: inherit; cursor: pointer; }
+.button {
+  min-height: 46px; padding: 8px 20px; border-radius: 99px; border: 1px solid transparent;
+  background: var(--accent); color: white; font-weight: 700;
+}
+.button:hover:enabled { filter: brightness(.93); }
+.button:disabled { background: #e6ddf1; color: #685b77; cursor: default; }
+.secondary { background: var(--paper); color: var(--ink); border-color: var(--line); }
+:focus-visible { outline: 3px solid #8b64d2; outline-offset: 3px; }
+[tabindex="-1"]:focus { outline: none; }
+.actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+#next { margin-inline-start: auto; }
+.narrow { max-width: 740px; margin: auto; padding: 24px 0; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: clamp(16px, 4vw, 28px); }
+.progress-label { display: flex; justify-content: space-between; color: var(--muted); }
+progress { display: block; width: 100%; height: 10px; margin: 8px 0 16px; accent-color: var(--accent); }
+fieldset { min-width: 0; padding: 0; margin: 0; border: 0; display: grid; gap: 8px; }
+.choice {
+  display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: center; gap: 9px;
+  min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; cursor: pointer;
+}
+.choice:hover { background: #f6effd; }
+.choice:has(input:checked) { background: #ede2fc; border-color: #895dc7; }
+.choice input { margin: 0; accent-color: var(--accent); }
+.banner {
+  padding: clamp(22px, 5vw, 40px); border-radius: 24px; color: #fff8ff;
+  background: radial-gradient(ellipse at top right, hsl(var(--hue) 44% 39%), hsl(var(--hue) 35% 16%) 78%);
+}
+.banner .kicker, #ties { color: #f1e0ff; }
+#ties { margin-top: 7px; font-size: .9rem; }
+.profile { margin: 16px 0 12px; }
+.profile-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 12px; align-items: center; }
+#radar { display: block; width: 100%; max-width: 420px; height: auto; margin: auto; }
+#scores { list-style: none; margin: 0; padding: 0; }
+.score {
+  display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) 3.5rem;
+  gap: 7px; align-items: center; padding: 4px 0; font-size: .9rem;
+}
+.score strong { text-align: right; font-variant-numeric: tabular-nums; }
+.track { height: 6px; border-radius: 10px; overflow: hidden; background: #eae0f3; }
+.track span { display: block; height: 100%; border-radius: inherit; background: #8056c7; }
+.details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.details h3 { margin-bottom: 5px; font-size: 1.05rem; }
+dialog {
+  width: min(420px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 14px;
+  border: 1px solid var(--line); border-radius: 19px; color: var(--ink); background: var(--paper);
+}
+dialog::backdrop { background: #221632bd; }
+.dialog-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+#poster { display: block; width: min(100%, max(135px, calc((100dvh - 190px) * .75))); height: auto; margin: auto; border-radius: 10px; }
+.enter { animation: enter .26s ease both; }
+@keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 620px) {
+  main { padding-inline: 14px; }
+  .hero, .profile-grid, .details { grid-template-columns: 1fr; }
+  .hero { padding-top: 25px; gap: 18px; }
+  .hero-art { aspect-ratio: 1.6; }
+  .hero-art svg { width: 62%; }
+}
+@media (prefers-reduced-motion: reduce) { .enter { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header><strong>✦ 天赋档案</strong><span>趣味人格测试</span></header>
+
+  <section id="home">
+    <div class="hero">
+      <div>
+        <p class="kicker">日常偏好小测试</p>
+        <h1>测测你的<br><em>隐藏天赋</em></h1>
+        <p class="muted">从 40 个生活场景里，找找你最顺手的那种本领。</p>
+        <div class="actions"><button class="button" id="start" type="button">开始测试</button></div>
+        <p class="muted">40 道单选题 · 约 6–8 分钟</p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 260 260" fill="none" stroke="#e7ceff">
+          <circle cx="130" cy="130" r="120" opacity=".32"/>
+          <circle cx="130" cy="130" r="105" opacity=".3" stroke-dasharray="2 6"/>
+          <ellipse cx="130" cy="130" rx="96" ry="50" transform="rotate(15 130 130)"/>
+          <ellipse cx="130" cy="130" rx="96" ry="50" transform="rotate(45 130 130)" opacity=".85"/>
+          <ellipse cx="130" cy="130" rx="96" ry="50" transform="rotate(75 130 130)" opacity=".8"/>
+          <ellipse cx="130" cy="130" rx="96" ry="50" transform="rotate(105 130 130)" opacity=".75"/>
+          <ellipse cx="130" cy="130" rx="96" ry="50" transform="rotate(135 130 130)" opacity=".7"/>
+          <ellipse cx="130" cy="130" rx="96" ry="50" transform="rotate(165 130 130)" opacity=".65"/>
+          <path d="M130 98q3 29 32 32-29 3-32 32-3-29-32-32 29-3 32-32Z" fill="#f2dbff"/>
+        </svg>
+      </div>
+    </div>
+    <h3>九种天赋维度</h3>
+    <div id="tags" class="tags"></div>
+  </section>
+
+  <section id="quiz" class="narrow" aria-labelledby="prompt" hidden>
+    <div class="progress-label">
+      <label for="progress">答题进度</label><span id="progress-text"></span>
+    </div>
+    <progress id="progress" value="0" max="40"></progress>
+    <article class="card" id="question-card">
+      <p id="question-number" class="kicker"></p>
+      <h2 id="prompt" tabindex="-1"></h2>
+      <form id="question-form">
+        <fieldset id="choices" aria-labelledby="prompt"></fieldset>
+        <div class="actions">
+          <button class="button secondary" id="previous" type="button">上一题</button>
+          <button class="button" id="next" type="submit" disabled>下一题</button>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <section id="result" class="narrow" aria-labelledby="result-title" hidden>
+    <article id="banner" class="banner">
+      <p id="result-label" class="kicker"></p>
+      <h2 id="result-title" tabindex="-1"></h2>
+      <p id="quote"></p>
+      <p id="ties" hidden></p>
+    </article>
+    <div class="actions">
+      <button class="button" id="share" type="button">查看分享卡</button>
+      <button class="button secondary" id="restart" type="button">重新测试</button>
+    </div>
+    <section class="card profile" aria-labelledby="profile-title">
+      <h3 id="profile-title">九维天赋雷达图</h3>
+      <p class="muted" id="scale-note"></p>
+      <div class="profile-grid">
+        <svg id="radar" viewBox="0 0 360 340" role="img" aria-labelledby="radar-title radar-desc">
+          <title id="radar-title">九个天赋维度的答题分布</title>
+          <desc id="radar-desc"></desc>
+          <g id="radar-plot" aria-hidden="true"></g>
+        </svg>
+        <ul id="scores" aria-label="各维度选中比例"></ul>
+      </div>
+    </section>
+    <div id="details" class="details"></div>
+  </section>
+
+  <footer>测测你的隐藏天赋 · 结果仅供娱乐与自我探索</footer>
+</main>
+
+<dialog id="share-dialog" aria-labelledby="share-title">
+  <div class="dialog-top">
+    <h3 id="share-title">分享卡</h3>
+    <form method="dialog"><button class="button secondary" autofocus>关闭</button></form>
+  </div>
+  <canvas id="poster" width="1080" height="1440" role="img"></canvas>
+  <div class="actions">
+    <button class="button" id="save" type="button">保存 PNG</button>
+    <span class="muted" id="save-status" role="status">也可以直接截图</span>
+  </div>
+</dialog>
+
+<noscript><p>请启用 JavaScript 后重新打开此网页。</p></noscript>
+
+<script>
+"use strict";
+
+// 每行依次是题干和四个选项。选项前的数字对应下方天赋表的顺序，从 0 开始。
+const questions = [
+  ["难得有一个空闲的下午，你最想做什么？", [0,"探索附近没走过的路线"], [1,"整理房屋，进行收纳"], [2,"找个地方做运动或者练舞蹈"], [6,"去公园观察植物"]],
+  ["走进一家陌生的咖啡馆，你最先留意什么？", [7,"店内的灯光和配色"], [5,"背景音乐的旋律"], [4,"招牌上的文字"], [3,"店员与客人的交流"]],
+  ["朋友准备摆周末小摊，你最想帮忙做什么？", [0,"规划摊位和排队路线"], [1,"计算成本和定价"], [4,"给小摊起名并写招牌"], [8,"和朋友聊聊各自摆摊的初衷"]],
+  ["学习一个新动作时，哪种方法最适合你？", [2,"跟着做，体会怎样发力"], [5,"数拍子，按节奏练习"], [0,"看站位和转向示意图"], [4,"听一句清楚的动作提示"]],
+  ["聚会聊天突然冷场，你通常会怎么做？", [3,"找一个大家都能聊的话题"], [8,"想想自己为什么在意冷场"], [5,"放一首轻快的背景音乐"], [2,"请大家一起动手摆拼盘"]],
+  ["看到朋友发来的旅行照片，你最想放大看哪里？", [0,"远处道路的走向"], [6,"路边的树木和花草"], [7,"建筑上的光影和色彩"], [3,"照片里人物的表情"]],
+  ["你做完一次小组汇报，觉得效果一般。你最想先做什么？", [1,"找出哪个环节最影响汇报效果"], [3,"问听众哪些地方听懂了，哪些地方没跟上"], [4,"把最难讲清楚的一段换个说法"], [8,"想想自己最在意这次汇报的哪一点"]],
+  ["有一本空白小册子，你最想用它记录什么？", [6,"沿途见到的植物和鸟"], [7,"喜欢的配色、图案和票根"], [8,"一天里心情变化的原因"], [4,"想到的句子和听到的妙语"]],
+  ["忙碌了一天，哪种方式最能让你放松？", [2,"散步或做拉伸"], [5,"戴上耳机听歌"], [7,"把桌面布置得更顺眼"], [6,"到树多的地方走走，感受时节变化"]],
+  ["小组要做一场三分钟的活动介绍，你最想负责什么？", [4,"把活动经过讲成一个故事"], [1,"筛选事实，理清介绍的逻辑"], [3,"了解组员的想法，协调分工"], [7,"统一幻灯片的配色和版式"]],
+  ["第一次参观大型展馆，你会优先做什么？", [0,"看平面图，熟悉各个展区"], [2,"去可以动手操作的展区"], [6,"观察自然标本的细微差异"], [8,"去看最打动自己的作品，想想原因"]],
+  ["回想一趟旅行，你最容易记起什么？", [0,"从车站到住处的路线"], [5,"旅途中听过的一段旋律"], [3,"同行者最开心的时刻"], [7,"街景和晚霞的色彩"]],
+  ["书店举办几场免费体验活动，你最想参加哪一场？", [1,"玩猜规则、找漏洞的桌游"], [4,"写一篇雨天小故事"], [2,"亲手捏一个陶杯"], [6,"认识街区常见的植物"]],
+  ["期待已久的活动临时取消，你通常会怎么做？", [5,"听歌调节心情"], [3,"和原本要参加的人聊聊"], [8,"想想自己具体在失望什么"], [1,"弄清取消的原因，考虑下次怎么安排"]],
+  ["走在熟悉的街上，你最容易注意到哪种变化？", [0,"一个路口有了更近的走法"], [7,"一家店换了橱窗配色"], [6,"街边的树开始落果"], [5,"经过某处时多了一阵节拍声"]],
+  ["朋友说自己很烦，却讲不清原因，你会怎么陪他？", [3,"先听他说，再问问他需要什么"], [4,"试着用一句话说出他的感受"], [2,"约他出去走一走，边走边聊"], [8,"陪他回想心情是从何时开始变的"]],
+  ["你在室外试飞纸飞机，飞了几次都很快掉下来。下一次你会先怎么试？", [1,"每次只改一个条件，比较哪次飞得最远"], [2,"换一种握法，调整出手时的力道"], [6,"看看现场风向，换个方向再试"], [0,"检查两侧机翼的角度是否对称"]],
+  ["睡前只看一个十分钟的视频，你最可能选哪个？", [7,"旧海报的配色和排版改造"], [5,"一首歌里的不同声部"], [8,"一个人如何学会独处"], [4,"同一件小事的三种讲法"]],
+  ["和朋友办一场闲置物品交换会，你会先准备什么？", [0,"规划入口、桌子和过道"], [1,"定好交换规则和人数上限"], [3,"询问大家想带什么、需要什么"], [6,"观察光照、风向和树荫"]],
+  ["给朋友准备生日礼物，你最想做什么？", [5,"按他的喜好编一份歌单"], [4,"写一张记录共同回忆的卡片"], [7,"挑选配色和图案来包装礼物"], [2,"亲手制作一件小物品"]],
+  ["回顾过去一周，你最想记下哪类经历？", [8,"让我有成就感的一刻及其原因"], [1,"哪项安排最省时间"], [6,"新发现的一种鸟或一朵花"], [3,"某个人照顾到他人感受的一刻"]],
+  ["逛二手市集时，哪类物品最能吸引你？", [0,"立体书和旧地图"], [7,"纹理特别的布料和杯碟"], [5,"旧唱片和随身听"], [2,"可以上手试用的工具和机械玩具"]],
+  ["学习一个陌生概念时，你通常怎么理解它？", [4,"找个例子，用自己的话讲一遍"], [1,"列出条件，用正反例子检验"], [3,"和别人讨论彼此哪里没懂"], [8,"想想它能回答自己的哪个疑问"]],
+  ["沿河步道散步时，你最想做什么？", [0,"沿着弯道走，认一认两岸的位置"], [6,"观察水鸟喜欢在哪些地方停留"], [5,"录下不同地点的水声和风声"], [7,"找个光影好看的位置拍照"]],
+  ["即将登台参加一项还不熟练的活动，你会怎么准备？", [2,"把动作拆开，各练几遍"], [1,"预想容易出错的环节，备好办法"], [3,"和搭档确认怎么互相配合"], [8,"想清楚自己为什么愿意上台"]],
+  ["家里有个闲置的小角落，你最想把它用来做什么？", [0,"改成取放方便的收纳区"], [5,"布置成安静听音乐的地方"], [6,"种几盆植物，观察它们的长势"], [4,"放上纸笔，随时记下想写的句子"]],
+  ["团队成员对同一方案有分歧时，你会先做什么？", [1,"列出几个标准，逐项比较选项"], [3,"请还没发言的人说说看法"], [4,"用更清楚的话复述各方意见"], [8,"请大家想想自己为什么在意原方案"]],
+  ["家里剩下一些手工材料，你最想用它们做什么？", [0,"拼一个能看出层次的立体模型"], [2,"做个小工具，边试边调整手感"], [7,"用不同颜色和纹理做拼贴"], [5,"敲敲不同材料，录一段节拍"]],
+  ["和刚认识的人聊天时，你更想聊什么？", [3,"对方的日常生活和朋友"], [8,"哪些经历改变了各自的想法"], [4,"印象深刻的词句或台词"], [6,"附近适合赏花或观鸟的地方"]],
+  ["怎么处理一个很容易找不到东西的柜子？", [0,"按物品大小调整柜内布局"], [1,"按类别和使用频率分类"], [7,"统一颜色搭配，让柜内更整齐"], [2,"试着拿取几次，看看怎样摆更顺手"]],
+  ["下雨时站在窗边，你通常会留意什么？", [5,"雨滴打在不同地方的节奏"], [7,"天空和路灯的颜色变化"], [6,"雨前雨后的气味和树叶变化"], [8,"下雨对自己心情的影响"]],
+  ["教朋友使用一个新工具时，你通常怎么做？", [2,"让他跟着自己动手试一遍"], [4,"用熟悉的事物打比方，再给一句提示"], [3,"先问他打算做什么，再针对用途示范"], [1,"先解释开关和部件如何配合"]],
+  ["家里养的植物突然开始掉叶，你会先做什么？", [6,"检查土壤、叶片和新芽"], [1,"回想最近改了哪些养护条件"], [0,"检查花盆与窗户、暖气的位置"], [3,"问问养过这种植物的朋友"]],
+  ["如果能花一个月做个小项目，你最想做什么？", [4,"写几封主题不同的信"], [5,"用生活中的声音编一首小曲"], [2,"练一段舞步或学一门小手艺"], [7,"拍一组色调统一的照片"]],
+  ["一场愉快的合作结束后，你最怀念什么？", [3,"大家逐渐形成的默契"], [8,"对自己兴趣和目标的新认识"], [5,"合作期间反复听的那首歌"], [1,"从混乱到清晰的工作流程"]],
+  ["刚搬到新住处时，你最想了解周边的什么？", [0,"小路如何相通，有没有近路"], [6,"附近的树木和观鸟地点"], [2,"适合跑步或锻炼的地方"], [7,"布置舒服、适合久坐的小店"]],
+  ["看完一部让你久久难忘的电影，你最想做什么？", [4,"记下最打动自己的台词"], [5,"找出印象最深的配乐再听一遍"], [8,"想想哪一幕触动了自己，为什么"], [3,"和朋友聊聊各自最在意的角色"]],
+  ["独自散步时，你最常做什么？", [6,"留意植物和虫鸣有什么变化"], [8,"梳理最近最在意的事情"], [5,"哼着歌，跟着节拍走"], [0,"记住沿路的转弯和岔路"]],
+  ["朋友请你谈谈对排练录像的印象，你会先说什么？", [2,"哪些动作衔接得流畅"], [4,"哪句台词最让人印象深刻"], [7,"服装和背景搭配得怎样"], [1,"哪一步最容易引发后续失误"]],
+  ["如果可以开一场小型体验工作坊，你最想带大家做什么？", [0,"用纸片搭街区模型"], [1,"设计一个线索推理游戏"], [6,"做一页自然观察手账"], [8,"写一张给未来自己的明信片"]]
+];
+
+// 维度、名称、色相、文案、匹配理由、隐藏优势、发展指南、趣味彩蛋。
+const talents = [
+  ["空间","空间构想家",262,"别人看见一个角落，你已经看见它能变成什么。",
+    "你容易留意事物的位置、方向和结构，习惯先在脑中拼出整体。",
+    "你容易想象形状怎样转动、物品怎样摆放、路线怎样衔接。",
+    "给常去的地方画一张平面图，再试一条新路线，标出哪里走起来更顺。",
+    "收拾行李箱时，你可能已经在做一次小型空间优化。"],
+  ["逻辑","线索拆解师",228,"事情越乱，你越想看看哪一根线牵着全局。",
+    "遇到问题时，你喜欢排查原因，也会把复杂决定拆成可比较的条件。",
+    "你容易发现真正影响结果的变量，也能看出论证里缺的一步。",
+    "选一个日常小麻烦，列出三个可能的原因。每次只改一个条件，记录结果。",
+    "听到「一直都是这么做的」，你可能已经想好了一组对照实验。"],
+  ["动觉","手感实践家",333,"你的灵感经常在动手以后才到场。",
+    "面对新技能，你更愿意通过跟做、试用和反复调整来摸索。",
+    "你容易发现力度、方向和动作衔接上的变化。",
+    "录下同一个动作的第一次和第五次练习，回看时找出一个具体变化。",
+    "被问到怎么学会的，你可能会先说「我慢一点做给你看」。"],
+  ["人际","气氛读心者",310,"有人没说出口的话，你往往先听见了。",
+    "你留意谁没接上话、谁还有顾虑，也会给新来的人留出参与机会。",
+    "你善于体察对方的情绪和需求，并找到适合彼此的配合方式。",
+    "下次讨论时，把一个人的顾虑复述成一句话，请对方确认你的理解。",
+    "你可能记得那个被打断的人原本说到了哪儿。"],
+  ["语言","字句捕手",284,"那些说不上来的事，到你这里终于有了名字。",
+    "你容易被准确的句子吸引，也常用复述、比喻和故事整理想法。",
+    "你能把复杂感受说清楚，也容易察觉换个词会怎样改变语气。",
+    "把一件小事写成一句话和一百字，再试着口述。比较每个版本留下了什么。",
+    "朋友随口说了个妙词，你回家路上可能还在默念。"],
+  ["音乐","声响采集家",245,"你听见的日常，常常自带一条音轨。",
+    "旋律、节拍和音色容易吸引你，声音也能帮你记住经历或调节心情。",
+    "你能发现重复出现的声响，并察觉重音和速度怎样改变情绪。",
+    "录三种生活声音，试着按快慢和疏密排成一段十五秒的小节奏。",
+    "路口提示音响到第三遍时，你可能已经在脑补低音和声。"],
+  ["自然","野外观察员",150,"你知道，看似一样的一片绿，其实有很多种。",
+    "你喜欢留意生物、天气和环境的细节，也愿意观察同一地点随时节的变化。",
+    "你容易辨认细小差别，还会注意变化发生时的环境条件。",
+    "选一棵常路过的树，从同一位置观察三次，记录叶片、光照和出现的生物。",
+    "你记路，可能会记得走到第六棵树就开始有蝉鸣。"],
+  ["美学","视觉调色师",354,"你总能发现，差一点点和刚刚好之间隔着什么。",
+    "你对配色、构图和光线的变化敏感，也愿意调整细节来改善整体效果。",
+    "你容易发现画面哪里抢眼，还能用质感和留白调整视觉重心。",
+    "用同三件东西拍三张照片，每次只改留白、光线或配色，再挑一张最喜欢的。",
+    "看着同一扇窗帘，你可能已经注意到它在一天里换了三次颜色。"],
+  ["内省","内心勘探者",205,"你的安静里，常常藏着一场很认真的对话。",
+    "遇到触动自己的事，你会想弄清感受和动机，再决定下一步。",
+    "你容易辨认一时的情绪和反复出现的需求，并从自身经历里找出线索。",
+    "连续三天各写三行，记录发生了什么、自己的感受，以及在意的是什么。",
+    "想通一件纠结已久的事，可能像解开一团缠了很久的耳机线。"]
+];
+
+const el = id => document.getElementById(id);
+const indices = talents.map((_, index) => index);
+const opportunities = talents.map(() => 0);
+for (const [, ...options] of questions) {
+  for (const [dimension] of options) opportunities[dimension]++;
+}
+
+let answers = [];
+let optionOrders = [];
+let current = 0;
+let outcome = null;
+
+function make(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+}
+
+function animate(node) {
+  node.classList.remove("enter");
+  void node.offsetWidth;
+  node.classList.add("enter");
+}
+
+function show(screen, heading) {
+  for (const id of ["home", "quiz", "result"]) el(id).hidden = id !== screen;
+  window.scrollTo(0, 0);
+  el(heading).focus({ preventScroll: true });
+}
+
+function shuffle(options) {
+  const order = [...options];
+  for (let index = order.length - 1; index > 0; index--) {
+    const other = Math.floor(Math.random() * (index + 1));
+    [order[index], order[other]] = [order[other], order[index]];
+  }
+  return order;
+}
+
+function begin() {
+  answers = Array(questions.length).fill(null);
+  optionOrders = questions.map(([, ...options]) => shuffle(options));
+  current = 0;
+  outcome = null;
+  show("quiz", "prompt");
+  renderQuestion();
+}
+
+function updateProgress() {
+  const complete = answers.filter(answer => answer !== null).length;
+  el("progress").value = complete;
+  el("progress-text").textContent = `已答 ${complete} / ${questions.length}`;
+  el("next").disabled = answers[current] === null;
+}
+
+function renderQuestion() {
+  el("question-number").textContent = `第 ${current + 1} 题`;
+  el("prompt").textContent = questions[current][0];
+  el("previous").hidden = current === 0;
+  el("next").textContent = current === questions.length - 1 ? "查看结果" : "下一题";
+
+  el("choices").replaceChildren(...optionOrders[current].map(([dimension, text]) => {
+    const label = make("label", undefined, "choice");
+    const input = make("input");
+    input.type = "radio";
+    input.name = "answer";
+    input.value = String(dimension);
+    input.checked = answers[current] === dimension;
+    label.append(input, make("span", text));
+    return label;
+  }));
+
+  updateProgress();
+  window.scrollTo(0, 0);
+  el("prompt").focus({ preventScroll: true });
+  animate(el("question-card"));
+}
+
+function scoreAnswers() {
+  const counts = talents.map(() => 0);
+  const first = talents.map(() => questions.length);
+  answers.forEach((dimension, index) => {
+    counts[dimension]++;
+    first[dimension] = Math.min(first[dimension], index);
+  });
+
+  // 比较精确比例。并列时，主卡取最早选中的并列维度。
+  const compare = (a, b) => counts[b] * opportunities[a] - counts[a] * opportunities[b];
+  const ranked = [...indices].sort((a, b) => compare(a, b) || first[a] - first[b]);
+  const primary = ranked[0];
+  const ties = ranked.slice(1).filter(index => compare(primary, index) === 0);
+  const ratios = counts.map((count, index) => count / opportunities[index]);
+  return { ratios, primary, ties, ranked };
+}
+
+const percent = ratio => `${(ratio * 100).toFixed(1).replace(/\.0$/, "")}%`;
+
+function svg(tag, attrs, label) {
+  const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [name, value] of Object.entries(attrs)) node.setAttribute(name, value);
+  if (label !== undefined) node.textContent = label;
+  return node;
+}
+
+function renderRadar(ratios, hue, leaders) {
+  const centerX = 180;
+  const centerY = 174;
+  const radius = 112;
+  const labelRadius = 142;
+  const top = Math.max(...ratios);
+  const scale = top || 1;
+  const color = `hsl(${hue} 57% 35%)`;
+  const shapes = [];
+
+  function point(index, distance) {
+    const angle = index * 2 * Math.PI / talents.length - Math.PI / 2;
+    return [centerX + Math.cos(angle) * distance, centerY + Math.sin(angle) * distance];
+  }
+
+  const points = vertices => vertices.map(vertex => vertex.join(",")).join(" ");
+  for (const level of [1, .75, .5, .25]) {
+    shapes.push(svg("polygon", {
+      points: points(indices.map(index => point(index, radius * level))),
+      fill: level === 1 ? "#f8f2fd" : "none",
+      stroke: "#d8cae8"
+    }));
+  }
+
+  for (const index of indices) {
+    const [x, y] = point(index, radius);
+    shapes.push(svg("line", { x1: centerX, y1: centerY, x2: x, y2: y, stroke: "#d8cae8" }));
+  }
+
+  // 仅缩放图形。顶点到中心的距离等于该维度分数除以本次最高分。
+  const vertices = ratios.map((ratio, index) => point(index, radius * ratio / scale));
+  shapes.push(svg("polygon", {
+    points: points(vertices), fill: color, "fill-opacity": .22,
+    stroke: color, "stroke-width": 2.5, "stroke-linejoin": "round"
+  }));
+
+  for (const index of indices) {
+    const [x, y] = vertices[index];
+    const leading = leaders.has(index);
+    if (ratios[index] > 0) {
+      shapes.push(svg("circle", {
+        cx: x, cy: y, r: leading ? 6 : 3.5, fill: color,
+        stroke: "#fff", "stroke-width": leading ? 2 : 1
+      }));
+    }
+    const [labelX, labelY] = point(index, labelRadius);
+    shapes.push(
+      svg("text", {
+        x: labelX, y: labelY - 3, "text-anchor": "middle",
+        fill: leading ? color : "#281e38", "font-size": 15, "font-weight": leading ? 850 : 650
+      }, talents[index][0]),
+      svg("text", {
+        x: labelX, y: labelY + 14, "text-anchor": "middle",
+        fill: leading ? color : "#625570", "font-size": 13, "font-weight": leading ? 750 : 400
+      }, percent(ratios[index]))
+    );
+  }
+
+  el("radar-plot").replaceChildren(...shapes);
+  el("radar-desc").textContent = indices.map(index =>
+    `${talents[index][0]} ${percent(ratios[index])}`
+  ).join("，");
+  el("scale-note").textContent =
+    `外圈代表本次最高分 ${percent(top)}，其余维度按比例绘制。标签显示实际选中比例。`;
+}
+
+function renderResult() {
+  outcome = scoreAnswers();
+  const [label, name, hue, quote, reason, strength, guide, egg] = talents[outcome.primary];
+  const tiedLabels = outcome.ties.map(index => talents[index][0]);
+
+  el("banner").style.setProperty("--hue", hue);
+  el("result-label").textContent = `${label}天赋`;
+  el("result-title").textContent = name;
+  el("quote").textContent = `「${quote}」`;
+  el("ties").hidden = tiedLabels.length === 0;
+  el("ties").textContent = `同为最高分 · ${tiedLabels.join("、")}`;
+
+  el("details").replaceChildren(...[
+    ["匹配理由", reason], ["隐藏优势", strength], ["发展指南", guide], ["趣味彩蛋", egg]
+  ].map(([heading, content]) => {
+    const card = make("article", undefined, "card");
+    card.append(make("h3", heading), make("p", content, "muted"));
+    return card;
+  }));
+
+  el("scores").replaceChildren(...outcome.ranked.map(index => {
+    const row = make("li", undefined, "score");
+    const meter = make("span", undefined, "track");
+    const fill = make("span");
+    fill.style.width = `${outcome.ratios[index] * 100}%`;
+    meter.setAttribute("aria-hidden", "true");
+    meter.append(fill);
+    row.append(make("span", talents[index][0]), meter, make("strong", percent(outcome.ratios[index])));
+    return row;
+  }));
+
+  renderRadar(outcome.ratios, hue, new Set([outcome.primary, ...outcome.ties]));
+  show("result", "result-title");
+  animate(el("result"));
+}
+
+function drawShareCard() {
+  const [label, name, hue, quote] = talents[outcome.primary];
+  const canvas = el("poster");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const gradient = ctx.createRadialGradient(540, 490, 90, 540, 730, 940);
+  gradient.addColorStop(0, `hsl(${hue} 44% 40%)`);
+  gradient.addColorStop(1, `hsl(${hue} 35% 14%)`);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 1080, 1440);
+  ctx.strokeStyle = "#f6e5ff80";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(34, 34, 1012, 1372);
+
+  ctx.save();
+  ctx.translate(540, 510);
+  ctx.strokeStyle = "#e9ccffb0";
+  for (let index = 0; index < 12; index++) {
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 260, 130, index * Math.PI / 12, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#fff6ff";
+  ctx.font = "600 34px sans-serif";
+  ctx.fillText("测测你的隐藏天赋", 540, 130);
+  ctx.fillText(`${label}天赋`, 540, 855);
+  ctx.font = "800 94px serif";
+  ctx.fillText(name, 540, 976);
+  ctx.font = "600 43px serif";
+
+  let line = "";
+  let y = 1100;
+  for (const char of `「${quote}」`) {
+    if (line && ctx.measureText(line + char).width > 850) {
+      ctx.fillText(line, 540, y);
+      y += 61;
+      line = "";
+    }
+    line += char;
+  }
+  if (line) ctx.fillText(line, 540, y);
+
+  ctx.font = "500 28px sans-serif";
+  if (outcome.ties.length) {
+    const names = outcome.ties.map(index => talents[index][0]).join("、");
+    ctx.fillText(`同为最高分 · ${names}`, 540, 1274, 900);
+  }
+  ctx.fillText("趣味人格测试 · 仅供娱乐与自我探索", 540, 1350);
+  canvas.setAttribute("aria-label", `${name}。${quote}`);
+  el("save-status").textContent = "也可以直接截图";
+  el("share-dialog").showModal();
+}
+
+function saveShareCard() {
+  const filename = `隐藏天赋-${talents[outcome.primary][1]}.png`;
+  const button = el("save");
+  button.disabled = true;
+  el("poster").toBlob(blob => {
+    button.disabled = false;
+    if (!blob) {
+      el("save-status").textContent = "图片生成失败，可以直接截图";
+      return;
+    }
+    const link = make("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    el("save-status").textContent = "图片已生成，可查看浏览器下载";
+  }, "image/png");
+}
+
+el("tags").replaceChildren(...talents.map(([label]) => make("span", label)));
+el("progress").max = questions.length;
+el("start").addEventListener("click", begin);
+el("restart").addEventListener("click", begin);
+el("previous").addEventListener("click", () => {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+});
+el("choices").addEventListener("change", event => {
+  if (!event.target.matches('input[type="radio"]:checked')) return;
+  answers[current] = Number(event.target.value);
+  updateProgress();
+});
+el("question-form").addEventListener("submit", event => {
+  event.preventDefault();
+  if (answers[current] === null) return;
+  if (current < questions.length - 1) {
+    current++;
+    renderQuestion();
+  } else if (answers.every(answer => answer !== null)) {
+    renderResult();
+  }
+});
+el("share").addEventListener("click", drawShareCard);
+el("save").addEventListener("click", saveShareCard);
+</script>
+</body>
+</html>
